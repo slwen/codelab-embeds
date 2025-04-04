@@ -1,0 +1,37 @@
+body {
+  background: #f6f7f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.larger-canvas {
+  width: 80vw;
+  height: 80vh;
+  position: relative;
+  background: #fff;
+  box-shadow: 0px 4px 32px -14px rgba(64, 87, 109, 0.30);
+  overflow: hidden;
+}
+
+.selection-frame {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  transition: transform 0.02s linear; /* Smooths out movement */
+  user-select: none;
+}
+
+.selection-frame.selected {
+  border: 2px solid #8b3dff;
+}
+
+iframe {
+  border: none;
+  display: block;
+  user-select: none;
+}
+
+.group-selection-frame {
+  box-sizing: border-box;
+}
