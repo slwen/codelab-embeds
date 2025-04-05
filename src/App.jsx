@@ -71,7 +71,7 @@ function App() {
   const [iframes, setIframes] = useState({
     iframe1: { x: 60, y: 50, width: null, height: null, url: 'http://localhost:9000' },
     iframe2: { x: 550, y: 80, width: null, height: null, url: 'http://localhost:9000' },
-    iframe3: { x: 220, y: 300, width: null, height: null, url: 'http://localhost:8000' }
+    iframe3: { x: 220, y: 260, width: null, height: null, url: 'http://localhost:8000' }
   });
   const [selectedIframes, setSelectedIframes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
