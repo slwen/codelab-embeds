@@ -69,8 +69,9 @@ function SelectionFrame({ selectedIframes, wrapperRefs, canvasRef, onDragStart, 
 
 function App() {
   const [iframes, setIframes] = useState({
-    iframe1: { x: 100, y: 100, width: 'auto', height: 'auto' },
-    iframe2: { x: 500, y: 100, width: 'auto', height: 'auto' },
+    iframe1: { x: 60, y: 50, width: null, height: null, url: 'http://localhost:9000' },
+    iframe2: { x: 550, y: 80, width: null, height: null, url: 'http://localhost:9000' },
+    iframe3: { x: 220, y: 300, width: null, height: null, url: 'http://localhost:8000' }
   });
   const [selectedIframes, setSelectedIframes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -126,6 +127,7 @@ function App() {
               selectedIframes.forEach((id) => {
                 if (initialPositions.current[id]) {
                   newIframes[id] = {
+                    ...prev[id],
                     x: initialPositions.current[id].x + deltaX,
                     y: initialPositions.current[id].y + deltaY,
                   };
@@ -216,27 +218,51 @@ function App() {
     }
   };
 
+  function SafeIframe({ id, url, title, style }) {
+    const parentUrl = window.location.href;
+  
+    const safeSrc = url.includes('?') ? `${url}&id=${id}` : `${url}?id=${id}`;
+  
+    return (
+      <iframe
+        src={safeSrc}
+        title={title}
+        style={style}
+        onLoad={() => {
+          const currentSrc = safeSrc;
+          if (currentSrc === parentUrl) {
+            console.error(`Iframe ${id} attempted to load parent URL: ${parentUrl}`);
+            // Optionally reset the src to prevent recursion
+            // This is a last resort and might cause a flicker
+          }
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="larger-canvas" ref={canvasRef} onClick={handleCanvasClick}>
-      {Object.entries(iframes).map(([id, { x, y }]) => (
-        <div
-          key={id}
-          ref={(el) => (wrapperRefs.current[id] = el)}
-          style={{
-            position: 'absolute',
-            left: `${x}px`,
-            top: `${y}px`,
-            width: `${iframes[id].width}px`,
-            height: `${iframes[id].height}px`
-          }}
-        >
-          <iframe
-            src={`http://localhost:9000/?id=${id}`}
-            title={`Todo App ${id}`}
-            style={{ width: '100%', height: '100%' }}
-          />
-        </div>
-      ))}
+    <div className="larger-canvas" ref={canvasRef} onClick={handleCanvasClick}>      
+      {Object.entries(iframes).map(([id, { x, y, width, height, url }]) => {
+        return (
+          <div
+            key={id}
+            ref={(el) => (wrapperRefs.current[id] = el)}
+            style={{
+              position: 'absolute',
+              left: `${x}px`,
+              top: `${y}px`,
+              width: `${width}px`,
+              height: `${height}px`,
+            }}
+          >
+            <iframe
+              src={`${url}?id=${id}`}
+              title={ id }
+              style={{ width: '100%', height: '100%' }}
+            />
+          </div>
+        );
+      })}
       <SelectionFrame
         selectedIframes={selectedIframes}
         wrapperRefs={wrapperRefs}
