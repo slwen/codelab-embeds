@@ -69,9 +69,9 @@ function SelectionFrame({ selectedIframes, wrapperRefs, canvasRef, onDragStart, 
 
 function App() {
   const [iframes, setIframes] = useState({
-    iframe1: { x: 60, y: 50, width: null, height: null, url: 'http://slwen-codelab-iframe-todo.netlify.app' },
-    iframe2: { x: 550, y: 80, width: null, height: null, url: 'http://slwen-codelab-iframe-todo.netlify.app' },
-    iframe3: { x: 220, y: 260, width: null, height: null, url: 'http://slwen-codelab-iframe-map.netlify.app' }
+    iframe1: { x: 60, y: 50, width: null, height: null, url: 'https://slwen-codelab-iframe-todo.netlify.app' },
+    iframe2: { x: 550, y: 80, width: null, height: null, url: 'https://slwen-codelab-iframe-todo.netlify.app' },
+    iframe3: { x: 220, y: 260, width: null, height: null, url: 'https://slwen-codelab-iframe-map.netlify.app' }
   });
   const [selectedIframes, setSelectedIframes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
