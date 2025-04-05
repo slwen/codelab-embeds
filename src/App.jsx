@@ -1,29 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
-function SelectionFrame({ selectedIframes, wrapperRefs, canvasRef, onDragStart }) {
+function SelectionFrame({ selectedIframes, wrapperRefs, canvasRef, onDragStart, iframes }) {
   if (selectedIframes.length === 0) return null;
 
-  const canvasRect = canvasRef.current.getBoundingClientRect();
-  const rects = selectedIframes.map((id) => wrapperRefs.current[id].getBoundingClientRect());
-  const minLeft = Math.min(...rects.map((r) => r.left));
-  const minTop = Math.min(...rects.map((r) => r.top));
-  const maxRight = Math.max(...rects.map((r) => r.right));
-  const maxBottom = Math.max(...rects.map((r) => r.bottom));
-  const padding = 10;
+  const [frameStyle, setFrameStyle] = useState({});
 
-  const adjustedLeft = minLeft - canvasRect.left - padding;
-  const adjustedTop = minTop - canvasRect.top - padding;
+  useEffect(() => {
+    if (!canvasRef.current || selectedIframes.length === 0) return;
 
-  const selectionStyle = {
-    position: 'absolute',
-    left: `${adjustedLeft}px`,
-    top: `${adjustedTop}px`,
-    width: `${maxRight - minLeft + 2 * padding}px`,
-    height: `${maxBottom - minTop + 2 * padding}px`,
-    border: '2px solid blue',
-    pointerEvents: 'none',
-  };
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+    const rects = selectedIframes.map((id) => wrapperRefs.current[id].getBoundingClientRect());
+    const minLeft = Math.min(...rects.map((r) => r.left));
+    const minTop = Math.min(...rects.map((r) => r.top));
+    const maxRight = Math.max(...rects.map((r) => r.right));
+    const maxBottom = Math.max(...rects.map((r) => r.bottom));
+
+    const adjustedLeft = minLeft - canvasRect.left;
+    const adjustedTop = minTop - canvasRect.top;
+
+    setFrameStyle({
+      position: 'absolute',
+      left: `${adjustedLeft-2}px`,
+      top: `${adjustedTop-2}px`,
+      width: `${maxRight - minLeft}px`,
+      height: `${maxBottom - minTop}px`,
+      border: '2px solid blue',
+      pointerEvents: 'none',
+    });
+  }, [selectedIframes, wrapperRefs, canvasRef, iframes]);
 
   const dragHandleStyle = {
     position: 'absolute',
@@ -43,7 +48,7 @@ function SelectionFrame({ selectedIframes, wrapperRefs, canvasRef, onDragStart }
   };
 
   return (
-    <div style={selectionStyle}>
+    <div style={frameStyle}>
       <div style={dragHandleStyle} onMouseDown={onDragStart}>
         <span>✥</span>
       </div>
@@ -53,8 +58,8 @@ function SelectionFrame({ selectedIframes, wrapperRefs, canvasRef, onDragStart }
 
 function App() {
   const [iframes, setIframes] = useState({
-    iframe1: { x: 100, y: 100 },
-    iframe2: { x: 500, y: 100 },
+    iframe1: { x: 100, y: 100, width: 'auto', height: 'auto' },
+    iframe2: { x: 500, y: 100, width: 'auto', height: 'auto' },
   });
   const [selectedIframes, setSelectedIframes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -88,16 +93,19 @@ function App() {
           );
           break;
 
-        case 'dragStart':
-          if (selectedIframes.includes(iframeId)) {
+        case 'dragStart': {
+          const { isUsed } = data;
+          if (selectedIframes.includes(iframeId) && !isUsed) {
             setIsDragging(true);
             dragStartPosition.current = { x: absoluteX, y: absoluteY };
             initialPositions.current = { ...iframes };
           }
           break;
+        }
 
-        case 'drag':
-          if (isDragging && selectedIframes.includes(iframeId)) {
+        case 'drag': {
+          const { isUsed } = data;
+          if (isDragging && selectedIframes.includes(iframeId) && !isUsed) {
             const deltaX = absoluteX - dragStartPosition.current.x;
             const deltaY = absoluteY - dragStartPosition.current.y;
 
@@ -115,6 +123,7 @@ function App() {
             });
           }
           break;
+        }
 
         case 'dragEnd':
           if (isDragging) {
@@ -123,6 +132,14 @@ function App() {
             initialPositions.current = {};
           }
           break;
+        
+          case 'resize':
+            const { width, height } = data;
+            setIframes((prev) => ({
+              ...prev,
+              [iframeId]: { ...prev[iframeId], width, height },
+            }));
+            break;
 
         default:
           break;
@@ -194,12 +211,14 @@ function App() {
             position: 'absolute',
             left: `${x}px`,
             top: `${y}px`,
+            width: `${iframes[id].width}px`,
+            height: `${iframes[id].height}px`
           }}
         >
           <iframe
             src={`http://localhost:9000/?id=${id}`}
             title={`Todo App ${id}`}
-            style={{ width: '300px', height: '200px' }}
+            style={{ width: '100%', height: '100%' }}
           />
         </div>
       ))}
@@ -208,6 +227,7 @@ function App() {
         wrapperRefs={wrapperRefs}
         canvasRef={canvasRef}
         onDragStart={onDragStart}
+        iframes={iframes}
       />
     </div>
   );

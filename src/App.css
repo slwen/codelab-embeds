@@ -20,6 +20,7 @@ body {
   top: 0px;
   transition: transform 0.02s linear; /* Smooths out movement */
   user-select: none;
+  pointer-events: none; /* Don’t block iframe */
 }
 
 .selection-frame.selected {
