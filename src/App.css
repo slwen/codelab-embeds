@@ -18,7 +18,7 @@ body {
   position: absolute;
   left: 0px;
   top: 0px;
-  transition: transform 0.02s linear; /* Smooths out movement */
+  transition: transform 0.012s linear; /* Smooths out movement */
   user-select: none;
   pointer-events: none; /* Don’t block iframe */
 }

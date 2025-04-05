@@ -2,12 +2,23 @@ import { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 function SelectionFrame({ selectedIframes, wrapperRefs, canvasRef, onDragStart, iframes }) {
-  if (selectedIframes.length === 0) return null;
-
-  const [frameStyle, setFrameStyle] = useState({});
+  const [frameStyle, setFrameStyle] = useState({
+    position: 'absolute',
+    left: '0px',
+    top: '0px',
+    width: '0px',
+    height: '0px',
+    border: '2px solid blue',
+    pointerEvents: 'none',
+    visibility: 'hidden', // Initially hidden
+  });
 
   useEffect(() => {
-    if (!canvasRef.current || selectedIframes.length === 0) return;
+    if (selectedIframes.length === 0) {
+      // Render a hidden element if no selected iframes
+      setFrameStyle((prev) => ({ ...prev, visibility: 'hidden' }));
+      return;
+    }
 
     const canvasRect = canvasRef.current.getBoundingClientRect();
     const rects = selectedIframes.map((id) => wrapperRefs.current[id].getBoundingClientRect());
@@ -63,6 +74,7 @@ function App() {
   });
   const [selectedIframes, setSelectedIframes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false); // Add a ref to track dragging state
   const wrapperRefs = useRef({});
   const canvasRef = useRef(null);
   const dragStartPosition = useRef(null);
@@ -156,6 +168,7 @@ function App() {
 
     const canvasRect = canvasRef.current.getBoundingClientRect();
     setIsDragging(true);
+    isDraggingRef.current = true; // Update ref immediately, instead of async react state
     dragStartPosition.current = {
       x: e.clientX - canvasRect.left,
       y: e.clientY - canvasRect.top,
@@ -163,7 +176,7 @@ function App() {
     initialPositions.current = { ...iframes };
 
     const handleMouseMove = (moveEvent) => {
-      if (!isDragging) return;
+      if (!isDraggingRef.current) return;
       const deltaX = moveEvent.clientX - canvasRect.left - dragStartPosition.current.x;
       const deltaY = moveEvent.clientY - canvasRect.top - dragStartPosition.current.y;
 
@@ -172,6 +185,7 @@ function App() {
         selectedIframes.forEach((id) => {
           if (initialPositions.current[id]) {
             newIframes[id] = {
+              ...prev[id],
               x: initialPositions.current[id].x + deltaX,
               y: initialPositions.current[id].y + deltaY,
             };
@@ -182,8 +196,9 @@ function App() {
     };
 
     const handleMouseUp = () => {
-      if (isDragging) {
+      if (isDraggingRef.current) {
         setIsDragging(false);
+        isDraggingRef.current = false;
         dragStartPosition.current = null;
         initialPositions.current = {};
       }
